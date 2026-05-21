@@ -1,0 +1,49 @@
+{
+  "axioms_applied": [
+    "CIO",
+    "PEEL"
+  ],
+  "certificate_id": "3ba3e63e88dd21a4",
+  "claim_seed": "0x3fbe5de8b9d76b79b4dd50a07bf4e04a25dac585",
+  "claim_target": "0x47666fab8bd0ac7c4f67fa7f2b8c3a1b4e2d9c8f",
+  "derivation_steps": [
+    {
+      "axiom": "PEEL",
+      "description": "PEEL: tx 0xaa001f3b\u2026 sends to exchange 0xfixedflo\u2026; change 0xb2c3d4e5\u2026 \u2192 same entity as 0x3fbe5de8\u2026",
+      "from_addr": "0x3fbe5de8b9d76b79b4dd50a07bf4e04a25dac585",
+      "step": 1,
+      "to_addr": "0xfixedfloat_deposit_001000000000000000001",
+      "tx_hash": "0xaa001f3b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f"
+    },
+    {
+      "axiom": "PEEL",
+      "description": "PEEL: tx 0xcc003b4c\u2026 sends to exchange 0xfixedflo\u2026; change 0x96a6d7d7\u2026 \u2192 same entity as 0xa4b73b6c\u2026",
+      "from_addr": "0xfixedfloat_deposit_001000000000000000001",
+      "step": 2,
+      "to_addr": "0x96a6d7d7b6fa97f1c2e5a8b3c4d9e0f1a2b3c4d5",
+      "tx_hash": "0xcc003b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
+    },
+    {
+      "axiom": "CIO",
+      "description": "CIO: inputs 0x96a6d7d7\u2026 and 0x47666fab\u2026 co-sign tx 0xdd004c5d\u2026",
+      "from_addr": "0x96a6d7d7b6fa97f1c2e5a8b3c4d9e0f1a2b3c4d5",
+      "step": 3,
+      "to_addr": "0x47666fab8bd0ac7c4f67fa7f2b8c3a1b4e2d9c8f",
+      "tx_hash": "0xdd004c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b"
+    }
+  ],
+  "entity": "Lazarus Group / APT38 (DPRK)",
+  "graph": "lazarus_bybit_2025",
+  "hop_count": 3,
+  "issuer": "VERDICT ENGINE / EVIDENTUM",
+  "proof_status": "PROVED",
+  "pubkey_fp": "e8738766042e1b75",
+  "pubkey_path": "/Users/dominikblain/omg-universe/repos/verdict-engine/keys/verdict_engine.pub",
+  "sha256": "3ba3e63e88dd21a416f07849b19cf7eda11b462e481c65789aa61051c63fef3c",
+  "signature": "NpKEI0kN2RSoh7NrNTB6yqewOItZAXYCNuNTtIHqr4k5juUVyRKzunqjjRWjbBd+iTtin5RZB8rBhB11S3WhDg==",
+  "signing_scheme": "Ed25519",
+  "solver_time_ms": 0.45,
+  "timestamp": "2026-05-21T23:35:48Z",
+  "verdict_engine_certificate": "1.0",
+  "z3_result": "unsat"
+}

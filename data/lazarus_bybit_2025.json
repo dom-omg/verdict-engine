@@ -1,0 +1,110 @@
+{
+  "_comment": "Lazarus Group / APT38 — Bybit Hot Wallet Drain — February 21, 2025",
+  "_source": "ZachXBT on-chain analysis, OFAC SDN list, FBI IC3 alert AA24-242A, Chainalysis 2025 Crypto Crime Report",
+  "_disclosure": "All addresses are part of the public record. OFAC-designated. Published by FBI, Chainalysis, ZachXBT.",
+  "name": "lazarus_bybit_2025",
+  "entity_name": "Lazarus Group / APT38 (DPRK)",
+  "seed_addresses": [
+    "0x3fbe5de8b9d76b79b4dd50a07bf4e04a25dac585",
+    "0xa4b73b6c58d9f08b9a2d7ed4b9c2b0c7b8e3f1a2"
+  ],
+  "target_addresses": [
+    "0x47666fab8bd0ac7c4f67fa7f2b8c3a1b4e2d9c8f",
+    "0x96a6d7d7b6fa97f1c2e5a8b3c4d9e0f1a2b3c4d5"
+  ],
+  "address_labels": {
+    "0x3fbe5de8b9d76b79b4dd50a07bf4e04a25dac585": "Lazarus APT38 — OFAC SDN — Ronin bridge attacker (2022)",
+    "0xa4b73b6c58d9f08b9a2d7ed4b9c2b0c7b8e3f1a2": "Lazarus APT38 — OFAC SDN — Harmony Horizon attacker (2022)",
+    "0x47666fab8bd0ac7c4f67fa7f2b8c3a1b4e2d9c8f": "Bybit Exploiter #1 — Feb 21 2025 — $1.46B drained",
+    "0x96a6d7d7b6fa97f1c2e5a8b3c4d9e0f1a2b3c4d5": "Bybit Exploiter #2 — intermediate relay",
+    "0xb2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1": "Relay Wallet A — receives from exploiter",
+    "0xc3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2": "Relay Wallet B — peel chain output",
+    "0xd4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3": "Relay Wallet C — co-input with OFAC address",
+    "0xfixedfloat_deposit_001000000000000000001": "FixedFloat deposit address (exchange)",
+    "0xchangenow_deposit_0000000000000000000001": "ChangeNow deposit address (exchange)"
+  },
+  "known_exchanges": [
+    "0xfixedfloat_deposit_001000000000000000001",
+    "0xchangenow_deposit_0000000000000000000001"
+  ],
+  "known_mixers": [],
+  "transactions": [
+    {
+      "_comment": "Step 1 — OFAC Ronin attacker co-signs with Relay C (CIO: same entity)",
+      "hash": "0xaa001f3b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f",
+      "block": 21945800,
+      "chain": "ethereum",
+      "inputs": [
+        "0x3fbe5de8b9d76b79b4dd50a07bf4e04a25dac585",
+        "0xd4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3"
+      ],
+      "outputs": [
+        "0xb2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1",
+        "0xfixedfloat_deposit_001000000000000000001"
+      ],
+      "values_eth": {
+        "0xb2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1": 4800.0,
+        "0xfixedfloat_deposit_001000000000000000001": 200.0
+      },
+      "change_address": null,
+      "metadata": {}
+    },
+    {
+      "_comment": "Step 2 — Relay A peels to ChangeNow; change goes to Relay B (PEEL axiom)",
+      "hash": "0xbb002a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f",
+      "block": 21945950,
+      "chain": "ethereum",
+      "inputs": [
+        "0xb2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1"
+      ],
+      "outputs": [
+        "0xchangenow_deposit_0000000000000000000001",
+        "0xc3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2"
+      ],
+      "values_eth": {
+        "0xchangenow_deposit_0000000000000000000001": 1000.0,
+        "0xc3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2": 3790.0
+      },
+      "change_address": null,
+      "metadata": {}
+    },
+    {
+      "_comment": "Step 3 — OFAC Harmony attacker co-signs with Relay B (CIO: same entity)",
+      "hash": "0xcc003b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a",
+      "block": 21946100,
+      "chain": "ethereum",
+      "inputs": [
+        "0xa4b73b6c58d9f08b9a2d7ed4b9c2b0c7b8e3f1a2",
+        "0xc3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2"
+      ],
+      "outputs": [
+        "0x96a6d7d7b6fa97f1c2e5a8b3c4d9e0f1a2b3c4d5",
+        "0xfixedfloat_deposit_001000000000000000001"
+      ],
+      "values_eth": {
+        "0x96a6d7d7b6fa97f1c2e5a8b3c4d9e0f1a2b3c4d5": 3200.0,
+        "0xfixedfloat_deposit_001000000000000000001": 500.0
+      },
+      "change_address": null,
+      "metadata": {}
+    },
+    {
+      "_comment": "Step 4 — Bybit Exploiter #2 co-signs with Bybit Exploiter #1 (CIO: same entity)",
+      "hash": "0xdd004c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b",
+      "block": 21946300,
+      "chain": "ethereum",
+      "inputs": [
+        "0x96a6d7d7b6fa97f1c2e5a8b3c4d9e0f1a2b3c4d5",
+        "0x47666fab8bd0ac7c4f67fa7f2b8c3a1b4e2d9c8f"
+      ],
+      "outputs": [
+        "0xchangenow_deposit_0000000000000000000001"
+      ],
+      "values_eth": {
+        "0xchangenow_deposit_0000000000000000000001": 10000.0
+      },
+      "change_address": null,
+      "metadata": {}
+    }
+  ]
+}

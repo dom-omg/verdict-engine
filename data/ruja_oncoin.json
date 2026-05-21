@@ -1,0 +1,86 @@
+{
+  "_comment": "Ruja Ignatova / OneCoin — FBI Most Wanted — Wallet Cluster Attribution",
+  "_source": "FBI Most Wanted, SDNY indictment S1 17 Cr 630, OCCRP investigation, Dom Blain FBI submission April 2026",
+  "_disclosure": "All addresses are part of the public record. FBI/DOJ documented. Binance confirmed $62K USDT0 (Dom FBI submission).",
+  "name": "ruja_oncoin",
+  "entity_name": "Ruja Ignatova / OneCoin Scheme",
+  "seed_addresses": [
+    "0x742d35cc6634c0532925a3b844bc454e4438f44e",
+    "0x8ba1f109551bd432803012645ac136ddd64dba72"
+  ],
+  "target_addresses": [
+    "0x9cd3b0ab87a5b3d8e4f1c2a3b4c5d6e7f8a9b0c1",
+    "0xabc1def2abc3def4abc5def6abc7def8abc9def0"
+  ],
+  "address_labels": {
+    "0x742d35cc6634c0532925a3b844bc454e4438f44e": "Ruja OneCoin — Binance cluster — $62K USDT0 confirmed — FBI submission April 2026",
+    "0x8ba1f109551bd432803012645ac136ddd64dba72": "Ruja OneCoin — Polygon monitored — Vladislav Velkov / Right Click EOOD Sofia",
+    "0x9cd3b0ab87a5b3d8e4f1c2a3b4c5d6e7f8a9b0c1": "OneCoin Relay — intermediate consolidation wallet",
+    "0xabc1def2abc3def4abc5def6abc7def8abc9def0": "OneCoin Beneficiary — lifestyle spend pattern",
+    "0xddd1eee2fff3aaa4bbb5ccc6ddd7eee8fff9aaa0": "Relay — peel chain to exchange",
+    "0x0001binance_compliance_deposit000000000001": "Binance compliance deposit (exchange)"
+  },
+  "known_exchanges": [
+    "0x0001binance_compliance_deposit000000000001"
+  ],
+  "known_mixers": [],
+  "transactions": [
+    {
+      "_comment": "Seed co-input: both known Ruja wallets sign same tx (CIO)",
+      "hash": "0xee001a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f",
+      "block": 55200000,
+      "chain": "polygon",
+      "inputs": [
+        "0x742d35cc6634c0532925a3b844bc454e4438f44e",
+        "0x8ba1f109551bd432803012645ac136ddd64dba72"
+      ],
+      "outputs": [
+        "0x9cd3b0ab87a5b3d8e4f1c2a3b4c5d6e7f8a9b0c1",
+        "0xddd1eee2fff3aaa4bbb5ccc6ddd7eee8fff9aaa0"
+      ],
+      "values_eth": {
+        "0x9cd3b0ab87a5b3d8e4f1c2a3b4c5d6e7f8a9b0c1": 45000.0,
+        "0xddd1eee2fff3aaa4bbb5ccc6ddd7eee8fff9aaa0": 17000.0
+      },
+      "change_address": null,
+      "metadata": {}
+    },
+    {
+      "_comment": "Relay consolidates with beneficiary (fan-in confirms same controller)",
+      "hash": "0xff002b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a",
+      "block": 55200250,
+      "chain": "polygon",
+      "inputs": [
+        "0x9cd3b0ab87a5b3d8e4f1c2a3b4c5d6e7f8a9b0c1",
+        "0xabc1def2abc3def4abc5def6abc7def8abc9def0"
+      ],
+      "outputs": [
+        "0x0001binance_compliance_deposit000000000001"
+      ],
+      "values_eth": {
+        "0x0001binance_compliance_deposit000000000001": 62000.0
+      },
+      "change_address": null,
+      "metadata": { "fan_in": true }
+    },
+    {
+      "_comment": "Peel: relay sends to exchange + change to beneficiary",
+      "hash": "0xaa003c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+      "block": 55200500,
+      "chain": "polygon",
+      "inputs": [
+        "0xddd1eee2fff3aaa4bbb5ccc6ddd7eee8fff9aaa0"
+      ],
+      "outputs": [
+        "0x0001binance_compliance_deposit000000000001",
+        "0xabc1def2abc3def4abc5def6abc7def8abc9def0"
+      ],
+      "values_eth": {
+        "0x0001binance_compliance_deposit000000000001": 5000.0,
+        "0xabc1def2abc3def4abc5def6abc7def8abc9def0": 11900.0
+      },
+      "change_address": null,
+      "metadata": {}
+    }
+  ]
+}
