@@ -1,0 +1,49 @@
+{
+  "axioms_applied": [
+    "CIO",
+    "PEEL"
+  ],
+  "certificate_id": "00f9a2ddb2ea0201",
+  "claim_seed": "0x3fbe5de8b9d76b79b4dd50a07bf4e04a25dac585",
+  "claim_target": "0x47666fab8bd0ac7c4f67fa7f2b8c3a1b4e2d9c8f",
+  "derivation_steps": [
+    {
+      "axiom": "PEEL",
+      "description": "PEEL: tx 0xaa001f3b\u2026 sends to exchange 0xfixedflo\u2026; change 0xb2c3d4e5\u2026 \u2192 same entity as 0x3fbe5de8\u2026",
+      "from_addr": "0x3fbe5de8b9d76b79b4dd50a07bf4e04a25dac585",
+      "step": 1,
+      "to_addr": "0xfixedfloat_deposit_001000000000000000001",
+      "tx_hash": "0xaa001f3b2c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f"
+    },
+    {
+      "axiom": "PEEL",
+      "description": "PEEL: tx 0xcc003b4c\u2026 sends to exchange 0xfixedflo\u2026; change 0x96a6d7d7\u2026 \u2192 same entity as 0xa4b73b6c\u2026",
+      "from_addr": "0xfixedfloat_deposit_001000000000000000001",
+      "step": 2,
+      "to_addr": "0x96a6d7d7b6fa97f1c2e5a8b3c4d9e0f1a2b3c4d5",
+      "tx_hash": "0xcc003b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
+    },
+    {
+      "axiom": "CIO",
+      "description": "CIO: inputs 0x96a6d7d7\u2026 and 0x47666fab\u2026 co-sign tx 0xdd004c5d\u2026",
+      "from_addr": "0x96a6d7d7b6fa97f1c2e5a8b3c4d9e0f1a2b3c4d5",
+      "step": 3,
+      "to_addr": "0x47666fab8bd0ac7c4f67fa7f2b8c3a1b4e2d9c8f",
+      "tx_hash": "0xdd004c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b"
+    }
+  ],
+  "entity": "Lazarus Group / APT38 (DPRK)",
+  "graph": "lazarus_bybit_2025",
+  "hop_count": 3,
+  "issuer": "VERDICT ENGINE / EVIDENTUM",
+  "proof_status": "PROVED",
+  "pubkey_fp": "0b03647db907bdae",
+  "pubkey_path": "/Users/dominikblain/omg-universe/repos/verdict-engine/keys/verdict_mldsa65.pk",
+  "sha256": "00f9a2ddb2ea020156db6d8f0cb68c04e0bfbfa1bea7a546fbd5c99644d26568",
+  "signature": "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",
+  "signing_scheme": "ML-DSA-65",
+  "solver_time_ms": 0.34,
+  "timestamp": "2026-05-22T00:02:00Z",
+  "verdict_engine_certificate": "1.0",
+  "z3_result": "unsat"
+}

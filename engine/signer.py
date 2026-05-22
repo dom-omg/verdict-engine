@@ -54,7 +54,7 @@ def _load_public_key():
     return load_pem_public_key(PUBKEY_PATH.read_bytes())
 
 
-def issue(result: ProofResult, graph_name: str) -> dict:
+def issue(result: ProofResult, graph_name: str, scheme: str = "Ed25519") -> dict:
     """
     Build and sign a VERDICT ENGINE attribution certificate.
 
@@ -100,9 +100,18 @@ def issue(result: ProofResult, graph_name: str) -> dict:
     content_hash = hashlib.sha256(canonical.encode()).hexdigest()
     cert_id      = content_hash[:16]
 
-    priv    = _load_private_key()
-    sig_b64 = base64.b64encode(priv.sign(content_hash.encode())).decode()
-    pub_fp  = hashlib.sha256(PUBKEY_PATH.read_bytes()).hexdigest()[:16]
+    if scheme == "ML-DSA-65":
+        from engine import pqc_signer
+        sig_b64 = pqc_signer.sign_b64(content_hash.encode())
+        pub_fp  = pqc_signer.pubkey_fingerprint() or "unavailable"
+        if sig_b64 is None:
+            raise RuntimeError("ML-DSA-65 unavailable — install dilithium-py")
+        pub_path = str(pqc_signer.PQC_PK_PATH)
+    else:
+        priv    = _load_private_key()
+        sig_b64 = base64.b64encode(priv.sign(content_hash.encode())).decode()
+        pub_fp  = hashlib.sha256(PUBKEY_PATH.read_bytes()).hexdigest()[:16]
+        pub_path = str(PUBKEY_PATH)
 
     return {
         **payload,
@@ -110,8 +119,8 @@ def issue(result: ProofResult, graph_name: str) -> dict:
         "sha256":         content_hash,
         "signature":      sig_b64,
         "pubkey_fp":      pub_fp,
-        "pubkey_path":    str(PUBKEY_PATH),
-        "signing_scheme": "Ed25519",
+        "pubkey_path":    pub_path,
+        "signing_scheme": scheme,
     }
 
 
@@ -129,10 +138,17 @@ def verify(cert: dict) -> bool:
     if content_hash != cert.get("sha256"):
         return False
 
+    scheme  = cert.get("signing_scheme", "Ed25519")
+    sig_b64 = cert.get("signature", "")
+
+    if scheme == "ML-DSA-65":
+        from engine import pqc_signer
+        return pqc_signer.verify_b64(content_hash.encode(), sig_b64)
+
     try:
         from cryptography.exceptions import InvalidSignature
         pub = _load_public_key()
-        sig = base64.b64decode(cert["signature"])
+        sig = base64.b64decode(sig_b64)
         pub.verify(sig, content_hash.encode())
         return True
     except Exception:
