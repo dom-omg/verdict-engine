@@ -67,6 +67,15 @@ class VerifyRequest(BaseModel):
     certificate: dict                       # full certificate JSON
 
 
+class WalletProveRequest(BaseModel):
+    wallet: str                             # wallet address
+    chain: str = "eth"
+    entity_name: str = "Unknown Entity"
+    signals: list[str] = []                 # ["OFAC", "MIXER", "SCAM", ...]
+    risk_score: int = 0
+    scheme: str = "Ed25519"
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @app.get("/health")
@@ -146,6 +155,72 @@ def prove_attribution(req: ProveRequest):
                 "signing_scheme": cert["signing_scheme"],
             },
         },
+    }
+
+
+@app.post("/prove_wallet")
+def prove_wallet(req: WalletProveRequest):
+    """Prove attribution for an arbitrary wallet scan from chain-guardian / Wraith."""
+    import time, hashlib, uuid
+
+    # Check if we have a pre-built graph for this wallet
+    KNOWN_WALLETS: dict[str, str] = {}
+    for p in DATA_DIR.glob("*.json"):
+        try:
+            d = json.loads(p.read_text())
+            for addr in d.get("seed_addresses", []) + d.get("target_addresses", []):
+                KNOWN_WALLETS[addr.lower()] = p.stem
+        except Exception:
+            pass
+
+    wallet_lower = req.wallet.lower()
+    matched_graph = KNOWN_WALLETS.get(wallet_lower)
+
+    if matched_graph:
+        # Use pre-built graph
+        graph = TxGraph.from_json(str(DATA_DIR / f"{matched_graph}.json"))
+        seed   = graph.seed_addresses[0]
+        target = graph.target_addresses[0]
+        result = prove(graph, seed, target)
+        cert   = issue(result, matched_graph, scheme=req.scheme)
+    else:
+        # Build synthetic graph from Wraith signals
+        from engine.graph import Transaction
+        sig_map = {
+            "OFAC":    "ofac_sanctioned",
+            "MIXER":   "mixer_protocol",
+            "SCAM":    "scam_address",
+            "EXPLOIT": "exploit_contract",
+            "DARKNET": "darknet_market",
+        }
+        metadata = {sig_map.get(s, s.lower()): True for s in req.signals}
+
+        synthetic_graph = TxGraph(
+            name=f"dynamic_{req.wallet[:10]}",
+            entity_name=req.entity_name,
+            seed_addresses=[req.wallet],
+            target_addresses=[req.wallet],
+            transactions=[
+                Transaction(
+                    hash=f"0x{hashlib.sha256(req.wallet.encode()).hexdigest()}",
+                    block=0,
+                    chain=req.chain,
+                    inputs=[req.wallet],
+                    outputs=[req.wallet],
+                    values_eth={req.wallet: req.risk_score / 100.0},
+                    metadata=metadata,
+                )
+            ],
+            known_mixers={req.wallet} if "MIXER" in req.signals else set(),
+        )
+        result = prove(synthetic_graph, req.wallet, req.wallet)
+        cert   = issue(result, f"dynamic_{req.wallet[:10]}", scheme=req.scheme)
+
+    path = save(cert)
+    return {
+        "certificate": cert,
+        "saved_to": path,
+        "verify_url": f"/certificates/{cert['certificate_id']}",
     }
 
 
