@@ -14,6 +14,10 @@ Usage:
   verdict verify <cert_id>
   verdict list
 
+  verdict quantum ML-DSA-65
+  verdict quantum CHAINLOCK --bits 128 --horizon 15
+  verdict quantum list
+
 EVIDENTUM — Proof Intelligence
 """
 from __future__ import annotations
@@ -31,6 +35,7 @@ CERTS_DIR = ROOT / "certs"
 from engine.graph import TxGraph
 from engine.prover import prove
 from engine.signer import issue, verify, save
+from engine.quantum import QuantumProver, SCHEMES, issue_quantum_cert, save_quantum_cert
 
 
 # ── Terminal colours ─────────────────────────────────────────────────────────
@@ -192,6 +197,102 @@ def cmd_list() -> None:
     print()
 
 
+def print_quantum(result, cert: dict) -> None:
+    status_color = GREEN if result.is_secure() else (YELLOW if result.proof_status == "MARGINAL" else RED)
+    status_icon  = {
+        "SECURE": "✓ SECURE",
+        "MARGINAL": "⚠ MARGINAL",
+        "BROKEN": "✗ BROKEN",
+    }.get(result.proof_status, result.proof_status)
+
+    print(f"""
+{BOLD}╔══════════════════════════════════════════════════════════════╗
+║  QUANTUM VERDICT CERTIFICATE                                 ║
+╠══════════════════════════════════════════════════════════════╣{RESET}""")
+    print(f"{BOLD}║  Status        {status_color}{status_icon}{RESET}")
+    print(f"{BOLD}║  Scheme        {WHITE}{result.scheme_name}{RESET}")
+    print(f"{BOLD}║  Standard      {DIM}{result.scheme_params.get('standard', 'N/A')}{RESET}")
+    print(f"{BOLD}║  Security Target  {WHITE}{result.security_target} bits{RESET}")
+    print(f"{BOLD}║  Expiry        {DIM}{result.expiry_date} ({result.horizon_years}yr horizon){RESET}")
+    print(f"{BOLD}╠══════════════════════════════════════════════════════════════╣{RESET}")
+    print(f"{BOLD}║  BKZ ATTACK ANALYSIS  (β_min = {result.beta_min}){RESET}")
+
+    def attack_row(label, cost, margin, z3res):
+        z3_color = GREEN if z3res == "unsat" else RED
+        m_color  = GREEN if margin >= 30 else (YELLOW if margin >= 10 else RED)
+        print(f"  {CYAN}{label:<28}{RESET}  cost={cost:>7.1f} bits  "
+              f"margin={m_color}{margin:>+7.1f}{RESET}  "
+              f"Z3={z3_color}{z3res.upper()}{RESET}")
+
+    attack_row("Classical BKZ sieving",  result.cost_classical_bits,       result.security_margin_classical,          result.z3_classical)
+    attack_row("Quantum BKZ sieving",    result.cost_quantum_bits,         result.security_margin_quantum,            result.z3_quantum)
+    attack_row(f"Classical hybrid dual ({result.hybrid_reduction_bits:.1f}b red.)",
+                                          result.cost_classical_hybrid,     result.security_margin_classical_hybrid,   result.z3_hybrid_classical)
+    attack_row(f"Quantum hybrid dual ({result.hybrid_reduction_bits:.1f}b red.)",
+                                          result.cost_quantum_hybrid,       result.security_margin_quantum_hybrid,     result.z3_hybrid_quantum)
+
+    print(f"{BOLD}╠══════════════════════════════════════════════════════════════╣{RESET}")
+    print(f"  {DIM}Weakest margin: {result.weakest_margin:+.1f} bits  ·  "
+          f"Solver: {result.solver_time_ms:.1f} ms  ·  "
+          f"Model: Albrecht et al. 2021{RESET}")
+
+    if result.warnings:
+        print(f"{BOLD}╠══════════════════════════════════════════════════════════════╣{RESET}")
+        print(f"{BOLD}║  WARNINGS{RESET}")
+        for w in result.warnings:
+            print(f"  {YELLOW}⚠{RESET}  {w}")
+
+    print(f"{BOLD}╠══════════════════════════════════════════════════════════════╣{RESET}")
+    print(f"{BOLD}║  CERTIFICATE{RESET}")
+    print(f"  ID          {cert['certificate_id']}")
+    print(f"  SHA-256     {cert['sha256'][:54]}…")
+    print(f"  Signature   {cert['signature'][:40]}…")
+    print(f"  PubKey FP   {cert['pubkey_fp']}")
+    print(f"  Scheme      {cert['signing_scheme']}")
+    print(f"  Issued      {cert['timestamp']}")
+    print(f"{BOLD}╚══════════════════════════════════════════════════════════════╝{RESET}\n")
+
+
+def cmd_quantum(args: list[str]) -> None:
+    if not args or args[0] in ("list", "--list"):
+        print(f"\n{BOLD}Available schemes:{RESET}")
+        for name, p in SCHEMES.items():
+            print(f"  {CYAN}{name:<15}{RESET}  {p['description']}")
+        print()
+        return
+
+    scheme_name = args[0].upper()
+    if scheme_name not in SCHEMES:
+        scheme_name = args[0]   # try as-is (e.g. "chainlock" → "CHAINLOCK")
+        scheme_name = next((k for k in SCHEMES if k.upper() == scheme_name.upper()), scheme_name)
+
+    security_bits: int | None = None
+    horizon = 10
+    sign_scheme = "Ed25519"
+
+    for i, a in enumerate(args):
+        if a in ("--bits", "--security") and i + 1 < len(args):
+            security_bits = int(args[i + 1])
+        if a in ("--horizon", "--years") and i + 1 < len(args):
+            horizon = int(args[i + 1])
+        if a == "--ml-dsa":
+            sign_scheme = "ML-DSA-65"
+
+    print(f"  {DIM}Scheme:   {scheme_name}{RESET}")
+    print(f"  {DIM}Target:   {security_bits or 'default'} bits{RESET}")
+    print(f"  {DIM}Horizon:  {horizon} years{RESET}")
+    print(f"  {DIM}Running Z3 BKZ proof…{RESET}\n")
+
+    prover = QuantumProver()
+    result = prover.prove(scheme_name, security_target=security_bits, horizon_years=horizon)
+    cert   = issue_quantum_cert(result, scheme=sign_scheme)
+    path   = save_quantum_cert(cert)
+
+    print_quantum(result, cert)
+    print(f"  {DIM}Certificate saved → {path}{RESET}\n")
+    sys.exit(0 if result.is_secure() else 1)
+
+
 def usage() -> None:
     print(f"""
 {BOLD}Usage:{RESET}
@@ -202,12 +303,19 @@ def usage() -> None:
   verdict verify <cert_id>            Verify a certificate offline
   verdict list                        List all issued certificates
 
+  verdict quantum <scheme>            Prove post-quantum security of a scheme
+  verdict quantum <scheme> --bits 128 --horizon 15
+  verdict quantum list                Show available schemes
+
 {BOLD}Available graphs:{RESET}
   {', '.join(p.stem for p in DATA_DIR.glob('*.json')) if DATA_DIR.exists() else 'none'}
 
 {BOLD}Examples:{RESET}
   verdict prove lazarus_bybit_2025 --compare
   verdict prove ruja_oncoin
+  verdict quantum ML-DSA-65
+  verdict quantum CHAINLOCK --bits 128 --horizon 20
+  verdict quantum FALCON-512
 """)
 
 
@@ -243,6 +351,9 @@ def main() -> None:
 
     elif cmd == "list":
         cmd_list()
+
+    elif cmd == "quantum":
+        cmd_quantum(args[1:])
 
     else:
         print(f"{RED}Unknown command: {cmd}{RESET}")

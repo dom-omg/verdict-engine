@@ -1,0 +1,59 @@
+{
+  "attack_models": {
+    "classical_bkz_sieving": {
+      "beta_min": 477.0,
+      "cost_bits": 155.68,
+      "security_margin_bits": 27.68,
+      "z3_claim": "\u2200\u03b2 \u2265 477.0: 0.292\u03b2 + 16.4 \u2265 128",
+      "z3_result": "unsat"
+    },
+    "classical_hybrid_dual": {
+      "beta_min": 477.0,
+      "cost_bits": 150.68,
+      "security_margin_bits": 22.68,
+      "sparse_reduction_bits": 5.0,
+      "z3_claim": "\u2200\u03b2 \u2265 477.0: 0.292\u03b2 + 11.4 \u2265 128 (after 5.0-bit hybrid reduction)",
+      "z3_result": "unsat"
+    },
+    "quantum_bkz_sieving": {
+      "beta_min": 477.0,
+      "cost_bits": 142.81,
+      "security_margin_bits": 14.81,
+      "z3_claim": "\u2200\u03b2 \u2265 477.0: 0.265\u03b2 + 16.4 \u2265 128",
+      "z3_result": "unsat"
+    },
+    "quantum_hybrid_dual": {
+      "beta_min": 477.0,
+      "cost_bits": 137.81,
+      "security_margin_bits": 9.81,
+      "sparse_reduction_bits": 5.0,
+      "z3_claim": "\u2200\u03b2 \u2265 477.0: 0.265\u03b2 + 11.4 \u2265 128 (after 5.0-bit hybrid reduction)",
+      "z3_result": "unsat"
+    }
+  },
+  "certificate_id": "qv-b1ca3ec8f7153",
+  "cost_model": "Albrecht et al. 2021 / NIST PQC Security Analysis",
+  "expiry_date": "2036-05-23",
+  "horizon_years": 10,
+  "issuer": "QUANTUM VERDICT / EVIDENTUM",
+  "nist_level": 1,
+  "proof_status": "MARGINAL",
+  "pubkey_fp": "e8738766042e1b75",
+  "quantum_verdict_certificate": "1.0",
+  "scheme": "FALCON-512",
+  "scheme_description": "NIST FIPS 206 \u2014 NTRU-based signature (FALCON-512)",
+  "security_target_bits": 128,
+  "sha256": "b1ca3ec8f7153d86ca6bd9ba7a3c5211d941b7c862fa814026a713aa32185c6f",
+  "signature": "y0GFK4IweX4ZoHZFONa/hGhmpIUHCq7NucpWBMYJoa5jn20MQ34yN1RyI3iVRh0jnQtN2lQj/NuaK1QsolBuAw==",
+  "signing_scheme": "Ed25519",
+  "solver_time_ms": 3.58,
+  "standard": "FIPS 206",
+  "timestamp": "2026-05-26T05:31:22Z",
+  "type": "QUANTUM_SECURITY",
+  "warnings": [
+    "Quantum hybrid margin 9.8 bits \u2014 below 20-bit safety threshold. Consider upgrading to ML-DSA-87 for long-term quantum resistance.",
+    "SHIFT SNARE (2025): FALCON Gaussian sampler is vulnerable to 1-trace key recovery. Ensure constant-time implementation.",
+    "Weakest margin (9.8 bits) is below 30-bit buffer. Re-evaluate if BKZ cost model assumptions are updated."
+  ],
+  "weakest_margin_bits": 9.81
+}

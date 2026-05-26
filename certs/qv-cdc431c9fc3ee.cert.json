@@ -1,0 +1,55 @@
+{
+  "attack_models": {
+    "classical_bkz_sieving": {
+      "beta_min": 594.0,
+      "cost_bits": 189.85,
+      "security_margin_bits": 61.85,
+      "z3_claim": "\u2200\u03b2 \u2265 594.0: 0.292\u03b2 + 16.4 \u2265 128",
+      "z3_result": "unsat"
+    },
+    "classical_hybrid_dual": {
+      "beta_min": 594.0,
+      "cost_bits": 184.85,
+      "security_margin_bits": 56.85,
+      "sparse_reduction_bits": 5.0,
+      "z3_claim": "\u2200\u03b2 \u2265 594.0: 0.292\u03b2 + 11.4 \u2265 128 (after 5.0-bit hybrid reduction)",
+      "z3_result": "unsat"
+    },
+    "quantum_bkz_sieving": {
+      "beta_min": 594.0,
+      "cost_bits": 173.81,
+      "security_margin_bits": 45.81,
+      "z3_claim": "\u2200\u03b2 \u2265 594.0: 0.265\u03b2 + 16.4 \u2265 128",
+      "z3_result": "unsat"
+    },
+    "quantum_hybrid_dual": {
+      "beta_min": 594.0,
+      "cost_bits": 168.81,
+      "security_margin_bits": 40.81,
+      "sparse_reduction_bits": 5.0,
+      "z3_claim": "\u2200\u03b2 \u2265 594.0: 0.265\u03b2 + 11.4 \u2265 128 (after 5.0-bit hybrid reduction)",
+      "z3_result": "unsat"
+    }
+  },
+  "certificate_id": "qv-cdc431c9fc3ee",
+  "cost_model": "Albrecht et al. 2021 / NIST PQC Security Analysis",
+  "expiry_date": "2036-05-23",
+  "horizon_years": 10,
+  "issuer": "QUANTUM VERDICT / EVIDENTUM",
+  "nist_level": 3,
+  "proof_status": "SECURE",
+  "pubkey_fp": "e8738766042e1b75",
+  "quantum_verdict_certificate": "1.0",
+  "scheme": "ML-DSA-65",
+  "scheme_description": "NIST FIPS 204 \u2014 Module-Lattice Digital Signature (Dilithium-3)",
+  "security_target_bits": 128,
+  "sha256": "cdc431c9fc3ee0632d0967bc357b73ceb1ea9300ac3b23440898f06e4ac08bae",
+  "signature": "r1aFNKUY3g8vsu6Gxp+yvjAGtT8kFQfDu5L/Wa0Igux4svcKQm2eSUeuOaxLZwK5ueGt4rRwmk2vMTPkPEesCQ==",
+  "signing_scheme": "Ed25519",
+  "solver_time_ms": 25.3,
+  "standard": "FIPS 204",
+  "timestamp": "2026-05-26T05:31:15Z",
+  "type": "QUANTUM_SECURITY",
+  "warnings": [],
+  "weakest_margin_bits": 40.81
+}
