@@ -26,11 +26,14 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 ROOT      = Path(__file__).parent
 DATA_DIR  = ROOT / "data"
 CERTS_DIR = ROOT / "certs"
+DASH_DIR  = ROOT / "dashboard" / "out"
 
 from engine.graph  import TxGraph
 from engine.prover import prove
@@ -84,18 +87,6 @@ class WalletProveRequest(BaseModel):
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
-
-@app.get("/")
-def root():
-    return {
-        "service":   "VERDICT ENGINE",
-        "version":   "1.0.0",
-        "status":    "online",
-        "issuer":    "EVIDENTUM — Proof Intelligence",
-        "endpoints": ["/health", "/graphs", "/prove", "/prove_wallet", "/verify", "/verify_dag", "/certificates"],
-        "docs":      "/docs",
-    }
-
 
 @app.get("/health")
 def health():
@@ -382,7 +373,39 @@ def get_certificate(cert_id: str):
     return json.loads(matches[0].read_text())
 
 
+# ── Dashboard static files ─────────────────────────────────────────────────
+
+if DASH_DIR.exists():
+    app.mount("/_next", StaticFiles(directory=DASH_DIR / "_next"), name="next-static")
+
+    @app.get("/dashboard", response_class=HTMLResponse)
+    @app.get("/dashboard/", response_class=HTMLResponse)
+    def dashboard_ui():
+        idx = DASH_DIR / "index.html"
+        if idx.exists():
+            return HTMLResponse(content=idx.read_text(encoding="utf-8"))
+        return HTMLResponse(content="<h1>Dashboard not built</h1>", status_code=503)
+
+    @app.get("/", response_class=HTMLResponse)
+    def root_ui():
+        idx = DASH_DIR / "index.html"
+        if idx.exists():
+            return HTMLResponse(content=idx.read_text(encoding="utf-8"))
+        return HTMLResponse(content="<h1>VERDICT ENGINE — dashboard not built</h1>", status_code=503)
+else:
+    @app.get("/")
+    def root():
+        return {
+            "service":   "VERDICT ENGINE",
+            "version":   "1.0.0",
+            "status":    "online",
+            "issuer":    "EVIDENTUM — Proof Intelligence",
+            "endpoints": ["/health", "/graphs", "/prove", "/prove_wallet", "/verify", "/verify_dag", "/certificates"],
+            "docs":      "/docs",
+        }
+
+
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", 8765))
+    port = int(os.environ.get("PORT", 4874))
     uvicorn.run("server:app", host="0.0.0.0", port=port, reload=True)

@@ -4,10 +4,10 @@ primary_region = "yyz"
 [build]
 
 [env]
-  PORT = "8765"
+  PORT = "4874"
 
 [http_service]
-  internal_port = 8765
+  internal_port = 4874
   force_https = true
   auto_stop_machines = "stop"
   auto_start_machines = true

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Shield, CheckCircle, XCircle, Loader2, ExternalLink, Copy, ChevronDown, ChevronUp } from "lucide-react";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8765";
+const API = process.env.NEXT_PUBLIC_API_URL || "";
 
 type ProofStatus = "PROVED" | "NOT_PROVED" | "ERROR";
 
