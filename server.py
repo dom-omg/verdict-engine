@@ -85,6 +85,18 @@ class WalletProveRequest(BaseModel):
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
+@app.get("/")
+def root():
+    return {
+        "service":   "VERDICT ENGINE",
+        "version":   "1.0.0",
+        "status":    "online",
+        "issuer":    "EVIDENTUM — Proof Intelligence",
+        "endpoints": ["/health", "/graphs", "/prove", "/prove_wallet", "/verify", "/verify_dag", "/certificates"],
+        "docs":      "/docs",
+    }
+
+
 @app.get("/health")
 def health():
     return {
