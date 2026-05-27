@@ -61,10 +61,16 @@ class ProveRequest(BaseModel):
     seed: Optional[str] = None              # override seed address
     target: Optional[str] = None           # override target address
     scheme: str = "Ed25519"                 # "Ed25519" | "ML-DSA-65"
+    depends_on: list[str] = []             # cited proof URIs: "verdict:<id>", "proofnode:<id>", "trace:<id>"
 
 
 class VerifyRequest(BaseModel):
     certificate: dict                       # full certificate JSON
+
+
+class VerifyDagRequest(BaseModel):
+    certificate: dict                       # root certificate
+    dependencies: dict[str, dict] = {}     # id → cert/receipt dict for offline DAG verify
 
 
 class WalletProveRequest(BaseModel):
@@ -74,6 +80,7 @@ class WalletProveRequest(BaseModel):
     signals: list[str] = []                 # ["OFAC", "MIXER", "SCAM", ...]
     risk_score: int = 0
     scheme: str = "Ed25519"
+    depends_on: list[str] = []             # cited proof URIs
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
@@ -126,7 +133,7 @@ def prove_attribution(req: ProveRequest):
         raise HTTPException(400, f"Target address not in graph: {target}")
 
     result = prove(graph, seed, target)
-    cert   = issue(result, req.graph, scheme=req.scheme)
+    cert   = issue(result, req.graph, scheme=req.scheme, depends_on=req.depends_on)
     path   = save(cert)
 
     return {
@@ -214,7 +221,7 @@ def prove_wallet(req: WalletProveRequest):
             known_mixers={req.wallet} if "MIXER" in req.signals else set(),
         )
         result = prove(synthetic_graph, req.wallet, req.wallet)
-        cert   = issue(result, f"dynamic_{req.wallet[:10]}", scheme=req.scheme)
+        cert   = issue(result, f"dynamic_{req.wallet[:10]}", scheme=req.scheme, depends_on=req.depends_on)
 
     path = save(cert)
     return {
@@ -236,6 +243,100 @@ def verify_certificate(req: VerifyRequest):
         "signing_scheme": req.certificate.get("signing_scheme"),
         "message":        "Signature valid — certificate is authentic" if ok
                           else "INVALID — certificate has been tampered with",
+    }
+
+
+@app.post("/verify_dag")
+def verify_dag(req: VerifyDagRequest):
+    """
+    Verify a proof certificate AND all its cited dependencies (proof DAG).
+
+    Accepts the root cert + an optional inline dict of dependencies keyed by
+    their URI (e.g. "proofnode:7b97a84a", "verdict:189692a1").  Missing deps
+    are resolved from local cert/receipt storage.
+
+    Returns per-node verification status so the caller can pinpoint any break
+    in the chain.
+    """
+    import os
+
+    PROOFNODE_DIR = Path(
+        os.environ.get("PROOFNODE_RECEIPTS_DIR", str(ROOT.parent / "proofnode" / "receipts"))
+    )
+    TRACE_DIR = Path(
+        os.environ.get("TRACE_EVIDENCE_DIR", str(ROOT.parent / "u-cant-hide" / "intel" / "evidence"))
+    )
+
+    def _resolve(uri: str) -> Optional[dict]:
+        """Resolve a dep URI to its raw dict, checking inline deps then disk."""
+        if uri in req.dependencies:
+            return req.dependencies[uri]
+        prefix, _, ref_id = uri.partition(":")
+        if prefix == "verdict":
+            matches = list(CERTS_DIR.glob(f"{ref_id}*.cert.json"))
+            if matches:
+                return json.loads(matches[0].read_text())
+        elif prefix == "proofnode":
+            matches = list(PROOFNODE_DIR.glob(f"{ref_id}*.receipt.json"))
+            if matches:
+                return json.loads(matches[0].read_text())
+        elif prefix == "trace":
+            matches = list(TRACE_DIR.glob(f"{ref_id}*.evidence.json"))
+            if matches:
+                return json.loads(matches[0].read_text())
+        return None
+
+    def _verify_node(uri: str, raw: dict) -> dict:
+        prefix = uri.split(":")[0]
+        if prefix == "verdict":
+            ok = verify(raw)
+            return {"uri": uri, "issuer": raw.get("issuer", "VERDICT ENGINE"), "valid": ok}
+        elif prefix == "proofnode":
+            try:
+                import sys
+                sys.path.insert(0, str(ROOT.parent / "proofnode"))
+                import receipt as pn_receipt
+                ok = pn_receipt.verify_receipt(raw)
+            except Exception:
+                ok = False
+            return {"uri": uri, "issuer": "PROOFNODE", "valid": ok}
+        elif prefix == "trace":
+            ok = raw.get("sha256") == __import__("hashlib").sha256(
+                __import__("json").dumps(
+                    {k: raw[k] for k in raw if k not in ("sha256", "signature", "public_key", "evidence_id")},
+                    sort_keys=True, ensure_ascii=True, separators=(",", ":"),
+                ).encode()
+            ).hexdigest()
+            return {"uri": uri, "issuer": "u-cant-hide / TRACE", "valid": ok}
+        return {"uri": uri, "issuer": "unknown", "valid": False}
+
+    results: list[dict] = []
+
+    # Verify root cert
+    root_ok = verify(req.certificate)
+    results.append({
+        "uri":    f"verdict:{req.certificate.get('certificate_id', '?')}",
+        "issuer": req.certificate.get("issuer", "VERDICT ENGINE"),
+        "valid":  root_ok,
+        "role":   "root",
+    })
+
+    # Verify each dep in depends_on
+    for dep_uri in req.certificate.get("depends_on", []):
+        raw = _resolve(dep_uri)
+        if raw is None:
+            results.append({"uri": dep_uri, "issuer": "?", "valid": False, "error": "not found"})
+        else:
+            node = _verify_node(dep_uri, raw)
+            results.append(node)
+
+    all_valid = all(r["valid"] for r in results)
+    return {
+        "dag_valid":  all_valid,
+        "node_count": len(results),
+        "nodes":      results,
+        "message":    "Full proof DAG verified — all dependencies valid" if all_valid
+                      else "DAG INVALID — one or more nodes failed verification",
     }
 
 

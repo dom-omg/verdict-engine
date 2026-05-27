@@ -54,13 +54,23 @@ def _load_public_key():
     return load_pem_public_key(PUBKEY_PATH.read_bytes())
 
 
-def issue(result: ProofResult, graph_name: str, scheme: str = "Ed25519") -> dict:
+def issue(
+    result: ProofResult,
+    graph_name: str,
+    scheme: str = "Ed25519",
+    depends_on: Optional[list[str]] = None,
+) -> dict:
     """
     Build and sign a VERDICT ENGINE attribution certificate.
 
     The payload is canonical JSON (sorted keys). The SHA-256 hash of the
     payload is signed with Ed25519. The certificate is self-contained:
     any party with verdict_engine.pub can verify it offline.
+
+    depends_on: list of cited proof URIs that this cert builds upon.
+      Format: "verdict:<cert_id>"    — another VERDICT ENGINE certificate
+              "proofnode:<receipt_id>" — a PROOFNODE code-verification receipt
+              "trace:<evidence_id>"  — a u-cant-hide OSINT evidence package
     """
     _ensure_keypair()
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -88,6 +98,7 @@ def issue(result: ProofResult, graph_name: str, scheme: str = "Ed25519") -> dict
             }
             for s in result.derivation_steps
         ],
+        "depends_on":     depends_on or [],
         "timestamp":      timestamp,
         "issuer":         "VERDICT ENGINE / EVIDENTUM",
     }
@@ -129,7 +140,8 @@ def verify(cert: dict) -> bool:
     signing_fields = {
         "verdict_engine_certificate", "graph", "entity", "claim_seed",
         "claim_target", "proof_status", "z3_result", "axioms_applied",
-        "hop_count", "solver_time_ms", "derivation_steps", "timestamp", "issuer",
+        "hop_count", "solver_time_ms", "derivation_steps", "depends_on",
+        "timestamp", "issuer",
     }
     payload  = {k: cert[k] for k in signing_fields if k in cert}
     canonical = json.dumps(payload, sort_keys=True, ensure_ascii=True, separators=(",", ":"))
